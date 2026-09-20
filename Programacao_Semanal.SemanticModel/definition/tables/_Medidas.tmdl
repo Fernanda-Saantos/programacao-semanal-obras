@@ -1,0 +1,567 @@
+table _Medidas
+	lineageTag: 011d567a-ab42-4e46-b8f7-3aecda5a26a3
+
+	/// Data de referência do painel ('hoje'). Fixa em 20/09/2026 para o portfólio manter o mesmo retrato; em produção troque por TODAY().
+	measure 'Data Referência' = DATE(2026, 9, 20)
+		formatString: dd/mm/yyyy
+		isHidden
+		displayFolder: 2 - Calendário\Apoio
+		lineageTag: 2c1f6f0a-6b0e-4d51-9a47-5a3d6d0e8b11
+
+	/// Operações (linhas da programação) no contexto.
+	measure 'Qtd Atividades' = COALESCE(COUNTROWS(Fato_Programacao), 0)
+		formatString: #,0
+		displayFolder: 1 - Indicadores
+		lineageTag: 37c58b1b-8972-4dfe-b6e8-a35d9f0f219d
+
+	/// Ordens de serviço distintas.
+	measure 'Qtd OSs' = COALESCE(DISTINCTCOUNT(Fato_Programacao[Ordem]), 0)
+		formatString: #,0
+		displayFolder: 1 - Indicadores
+		lineageTag: 5a003a19-bd2c-4b4d-a853-259c3b713e5d
+
+	/// HH = duração x nº de pessoas (mesma regra da coluna TRAB da planilha).
+	measure 'Horas Programadas' = COALESCE(SUM(Fato_Programacao[HH Programado]), 0)
+		formatString: #,0.0
+		displayFolder: 1 - Indicadores
+		lineageTag: 83ae6863-8b21-40e8-bd56-ed7d763613e3
+
+	/// Soma de pessoas alocadas nas atividades.
+	measure 'Efetivo Programado' = SUM(Fato_Programacao[Num])
+		formatString: #,0
+		displayFolder: 1 - Indicadores
+		lineageTag: 91894de4-d7cb-469b-a27b-343cc6f8d84d
+
+	measure 'Dias com Programação' = DISTINCTCOUNT(Fato_Programacao[Data])
+		formatString: #,0
+		displayFolder: 1 - Indicadores
+		lineageTag: e31e703a-47bc-4823-a4f9-b04706483cd1
+
+	measure 'Média HH por Dia' = DIVIDE([Horas Programadas], [Dias com Programação])
+		formatString: #,0.0
+		displayFolder: 1 - Indicadores
+		lineageTag: f6cea8b4-0b0e-4f50-9445-7b775a0462cc
+
+	/// AAAAMM selecionado; se nada selecionado, mês da última data programada.
+	measure 'Mês Referência' =
+			VAR _Sel = SELECTEDVALUE(Sel_Mes[Ano-Mês Ordem])
+			VAR _Ult = COALESCE(CALCULATE(MAX(Fato_Programacao[Data]), ALLSELECTED(Dim_Calendario)), CALCULATE(MAX(Fato_Programacao[Data]), ALL(Fato_Programacao)))
+			RETURN COALESCE(_Sel, YEAR(_Ult) * 100 + MONTH(_Ult))
+		formatString: 0
+		isHidden
+		displayFolder: 2 - Calendário\Apoio
+		lineageTag: 63de8485-081e-41e2-b6f3-7b1ebd5ccf92
+
+	/// 1 quando a data pertence a uma semana (seg-dom) que toca o mês de referência.
+	measure 'Dentro do Período' =
+			VAR _Ref = [Mês Referência]
+			VAR _Ini = DATE(INT(_Ref / 100), MOD(_Ref, 100), 1)
+			VAR _Fim = EOMONTH(_Ini, 0)
+			VAR _IniSem = _Ini - WEEKDAY(_Ini, 2) + 1
+			VAR _FimSem = _Fim + (7 - WEEKDAY(_Fim, 2))
+			VAR _D = MAX(Dim_Calendario[Data])
+			RETURN IF(_D >= _IniSem && _D <= _FimSem, 1)
+		formatString: 0
+		isHidden
+		displayFolder: 2 - Calendário\Apoio
+		lineageTag: 95c32598-4a3a-4dae-83c2-79fae1f6ba77
+
+	measure 'Dentro do Mês' =
+			VAR _Ref = [Mês Referência]
+			VAR _D = MAX(Dim_Calendario[Data])
+			RETURN IF(YEAR(_D) * 100 + MONTH(_D) = _Ref, 1, 0)
+		formatString: 0
+		isHidden
+		displayFolder: 2 - Calendário\Apoio
+		lineageTag: ab721dfe-4095-46d9-acc9-4f78694f38f6
+
+	/// Data do dia no formato dd/mm (todas as colunas do calendário no mesmo padrão).
+	measure 'Cal Dia' = IF([Dentro do Período] = 1, FORMAT(MAX(Dim_Calendario[Data]), "dd/mm"))
+		displayFolder: 2 - Calendário
+		lineageTag: 4239619b-3085-4f90-99a5-f8c340b683a2
+
+	measure 'Cal Atividades' = IF([Dentro do Período] = 1, COALESCE([Qtd Atividades], 0))
+		formatString: 0 "ativ."
+		displayFolder: 2 - Calendário
+		lineageTag: 928c1a2e-0da7-4319-954e-75ccd5255f6e
+
+	measure 'Cal Horas' = IF([Dentro do Período] = 1, COALESCE([Horas Programadas], 0))
+		formatString: #,0.0 "h"
+		displayFolder: 2 - Calendário
+		lineageTag: 7bec4852-20fb-4f30-841a-23e4b4125735
+
+	measure 'Cal Cor Texto' =
+			VAR _O = SELECTEDVALUE(Sel_Metrica[Métrica Ordem])
+			RETURN
+			IF(
+			  _O = 1,
+			  IF([Dentro do Mês] = 1, "#EEF2F8", "#6F7F98"),
+			  IF([Dentro do Mês] = 1, "#1F2937", "#5F6B80")
+			)
+		isHidden
+		displayFolder: 2 - Calendário\Apoio
+		lineageTag: e9cd9c40-b93a-4c32-bc90-fa9fdaa0b396
+
+	/// Valor da célula da matriz calendário: dia (linha Dia) ou atividades do fiscal. Só mostra semanas com atividades.
+	measure 'Cal Valor' =
+			VAR _O = SELECTEDVALUE(Sel_Metrica[Métrica Ordem])
+			VAR _F = IF(_O > 1, SUBSTITUTE(SELECTEDVALUE(Sel_Metrica[Métrica]), "Ativ. · ", ""))
+			VAR _TemAtiv = CALCULATE([Qtd Atividades], ALLEXCEPT(Dim_Calendario, Dim_Calendario[Semana Rótulo])) > 0
+			VAR _Multi = CALCULATE(DISTINCTCOUNT(Fato_Programacao[Projeto]), ALLSELECTED(Fato_Programacao)) > 1
+			RETURN
+			IF(
+			  [Dentro do Período] = 1 && HASONEVALUE(Dim_Calendario[Data]) && _TemAtiv,
+			  SWITCH(
+			    TRUE(),
+			    _O = 1, [Cal Dia],
+			    ISBLANK(_O), " ",
+			    NOT ISBLANK(_F),
+			      CALCULATE(
+			        CONCATENATEX(
+			          SUMMARIZE(Fato_Programacao, Fato_Programacao[Projeto], Fato_Programacao[Texto Breve]),
+			          "• " & IF(_Multi, "[" & Fato_Programacao[Projeto] & "] ", "") & Fato_Programacao[Texto Breve],
+			          UNICHAR(10),
+			          Fato_Programacao[Projeto], ASC,
+			          Fato_Programacao[Texto Breve], ASC
+			        ),
+			        Fato_Programacao[Fiscal] = _F
+			      )
+			  )
+			)
+		displayFolder: 2 - Calendário
+		lineageTag: eca28f7d-35c8-458d-b407-d69ba87c4d47
+
+	/// Cor de fundo da célula: cinza na linha Dia; pastel por fiscal nas linhas de atividades.
+	measure 'Cal Cor Fundo' =
+			VAR _O = SELECTEDVALUE(Sel_Metrica[Métrica Ordem])
+			VAR _F = IF(_O > 1, SUBSTITUTE(SELECTEDVALUE(Sel_Metrica[Métrica]), "Ativ. · ", ""))
+			RETURN
+			SWITCH(
+			  TRUE(),
+			  _O = 1, IF([Dentro do Mês] = 1, "#22324A", "#1A2637"),
+			  ISBLANK([Cal Valor]), "#16202F",
+			  LOOKUPVALUE(Dim_Fiscal[Cor], Dim_Fiscal[Fiscal], _F, "#16202F")
+			)
+		isHidden
+		displayFolder: 2 - Calendário\Apoio
+		lineageTag: f269b524-a4f8-482d-ba29-bc06e9b99fe9
+
+	/// HH programado (DUR x NUM) das atividades com data anterior a hoje e EXECUÇÃO já preenchida (ignora as ainda sem apontamento).
+	measure 'HH Apontado' = COALESCE(SUMX(FILTER(Fato_Programacao, Fato_Programacao[Data] < [Data Referência] && NOT ISBLANK(Fato_Programacao[Execução])), Fato_Programacao[HH Programado]), 0)
+		formatString: #,0.0
+		displayFolder: 1 - Indicadores
+		lineageTag: 4f0c239c-48bd-4eda-ba46-8b1456d0cb76
+
+	/// TRAB = DUR x EXECUÇÃO das atividades com data anterior a hoje. EXECUÇÃO vazia é ignorada até ser preenchida.
+	measure 'TRAB Realizado' = COALESCE(SUMX(FILTER(Fato_Programacao, Fato_Programacao[Data] < [Data Referência] && NOT ISBLANK(Fato_Programacao[Execução])), COALESCE(Fato_Programacao[Dur], 0) * COALESCE(Fato_Programacao[Execução], 0)), 0)
+		formatString: #,0.0
+		displayFolder: 1 - Indicadores
+		lineageTag: 0cc400cc-a977-47ca-9bef-c82f6765b4cf
+
+	/// Sobra de horas = programado (DUR x NUM) - realizado (DUR x EXECUÇÃO). Positivo = sobrou; negativo = reforço (recebeu horas).
+	measure 'Saldo HH' = ROUND([HH Apontado] - [TRAB Realizado], 2)
+		formatString: #,0.0;-#,0.0;0.0
+		displayFolder: 1 - Indicadores
+		lineageTag: 909faa3c-3283-4b24-b20c-d6431e99f87b
+
+	/// Leitura do saldo: Sobrou / Reforço / Conforme / Aguardando apontamento.
+	measure Situação =
+			IF(
+			[Qtd Atividades] = 0, BLANK(),
+			IF([HH Apontado] = 0, "Aguardando apontamento",
+			IF([Saldo HH] > 0.05, "Sobrou",
+			IF([Saldo HH] < -0.05, "Reforço", "Conforme"))))
+		displayFolder: 1 - Indicadores
+		lineageTag: 2fe63551-4648-4549-9fea-d07c90315037
+
+	/// Cor pastel da situação (uso em formatação condicional).
+	measure 'Cor Situação' =
+			SWITCH(
+			    [Situação],
+			    "Sobrou", "#FAE8B8",
+			    "Reforço", "#B3E7EF",
+			    "Conforme", "#D2ECBE",
+			    "#E4E5E5"
+			)
+		isHidden
+		displayFolder: 1 - Indicadores
+		lineageTag: 3ef9eb5e-7a7b-4cc5-85e6-3db576b6c2c1
+
+	/// HH programado que sobrou depois de descontar reforços (saldo líquido, nunca negativo).
+	measure 'HH Subutilizado' = MAX([Saldo HH], 0)
+		formatString: #,0.0
+		displayFolder: 3 - Fechamento
+		lineageTag: 60f9612f-4aaf-480f-b05d-3cf127e3011f
+
+	/// HH subutilizado dividido pelo HH programado já apontado.
+	measure '% HH Subutilizado' = DIVIDE([HH Subutilizado], [HH Apontado], 0)
+		formatString: 0.0%
+		displayFolder: 3 - Fechamento
+		lineageTag: b3054e96-0776-461c-bfee-ea220082057c
+
+	/// Atividades de datas passadas ainda sem EXECUÇÃO preenchida.
+	measure 'Linhas Aguardando Apontamento' =
+			COALESCE(
+			    COUNTROWS(
+			        FILTER(
+			            Fato_Programacao,
+			            Fato_Programacao[Data] < [Data Referência] && ISBLANK(Fato_Programacao[Execução]) && Fato_Programacao[HH Programado] > 0
+			        )
+			    ),
+			    0
+			)
+		formatString: #,0
+		displayFolder: 3 - Fechamento
+		lineageTag: 2c7078b7-f135-4f6f-bb2f-6384e41d3648
+
+	/// Texto de fechamento da reunião (muda com os filtros: por fiscal, encarregado etc.).
+	measure 'Mensagem Reunião' =
+			VAR _HH = [HH Subutilizado]
+			VAR _P = [% HH Subutilizado]
+			VAR _Pend = [Linhas Aguardando Apontamento]
+			VAR _Sem = [Qtd Atividades] > 0
+			VAR _Base =
+			    IF(
+			        _HH > 0.05,
+			        FORMAT(_HH, "#,0.0") & " h de HH subutilizado (" & FORMAT(_P, "0.0%") & " do programado). Não estamos entregando no prazo: vamos rever como estamos planejando, gente? Está com dificuldade? Peça ajuda, equipe!",
+			        "HH programado = HH realizado na semana. Plano entregue, equipe!"
+			    )
+			RETURN
+			    IF(NOT _Sem, "Sem programação para a semana selecionada.", _Base & IF(_Pend > 0, "  ·  " & _Pend & " linha(s) aguardando apontamento", ""))
+		displayFolder: 3 - Fechamento
+		lineageTag: 3531dd7a-af62-484e-add9-d58808cc1704
+
+	/// Faixa de fechamento, linha 1: números da semana.
+	measure 'Mensagem Linha 1' =
+			VAR _HH = [HH Subutilizado]
+			VAR _P = [% HH Subutilizado]
+			VAR _Pend = [Linhas Aguardando Apontamento]
+			RETURN
+			    IF(
+			        [Qtd Atividades] = 0,
+			        "Sem programação para a semana selecionada.",
+			        IF(
+			            _HH > 0.05,
+			            FORMAT(_HH, "#,0.0") & " h de HH subutilizado (" & FORMAT(_P, "0.0%") & " do programado)",
+			            "HH programado = HH realizado na semana."
+			        ) & IF(_Pend > 0, "  ·  " & _Pend & " linha(s) aguardando apontamento", "")
+			    )
+		displayFolder: 3 - Fechamento
+		lineageTag: 423fd9ba-8a9e-4fc7-87e3-2738b06c1abe
+
+	/// Faixa de fechamento, linha 2: provocação da reunião.
+	measure 'Mensagem Linha 2' =
+			IF(
+			    [Qtd Atividades] = 0,
+			    " ",
+			    IF(
+			        [HH Subutilizado] > 0.05,
+			        "Não estamos entregando no prazo: vamos rever como estamos planejando, gente? Está com dificuldade? Peça ajuda, equipe!",
+			        "Plano entregue, equipe!"
+			    )
+			)
+		displayFolder: 3 - Fechamento
+		lineageTag: 8573adb6-f518-49c9-b685-e086fd2d4d69
+
+	/// Título que acompanha o filtro de semana ('Semana 35', 'Semanas 35 - 38' ou 'Todas as semanas'). Termina com espaços fixos (U+00A0) para o texto ter sempre a mesma largura e começar no mesmo ponto no cartão centralizado.
+	measure 'Título Semana' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Txt =
+			    IF(
+			        _N = 1,
+			        "Semana " & MIN(Dim_Calendario[Semana ISO]),
+			        IF(
+			            _N >= _Tot,
+			            "Todas as semanas",
+			            "Semanas " & MIN(Dim_Calendario[Semana ISO]) & " - " & MAX(Dim_Calendario[Semana ISO])
+			        )
+			    )
+			RETURN
+			    _Txt & REPT(UNICHAR(160), MAX(0, ROUND((15 - LEN(_Txt)) * 1.9, 0)))
+		displayFolder: 3 - Fechamento
+		lineageTag: 98ff082f-6b78-4a87-8a66-5fb85e52d813
+
+	/// Datas e mês(es) da(s) semana(s) selecionada(s) (semana seg-dom), ex.: '24/08 a 30/08/2026 · Agosto/2026'.
+	measure 'Período Semana' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Ini = MIN(Dim_Calendario[Início da Semana])
+			VAR _Fim = MAX(Dim_Calendario[Início da Semana]) + 6
+			VAR _MI = FORMAT(_Ini, "mmmm", "pt-BR")
+			VAR _MF = FORMAT(_Fim, "mmmm", "pt-BR")
+			VAR _NI = UPPER(LEFT(_MI, 1)) & MID(_MI, 2, 20)
+			VAR _NF = UPPER(LEFT(_MF, 1)) & MID(_MF, 2, 20)
+			VAR _Mes =
+			    IF(
+			        YEAR(_Ini) = YEAR(_Fim) && MONTH(_Ini) = MONTH(_Fim),
+			        _NI & "/" & YEAR(_Ini),
+			        IF(
+			            YEAR(_Ini) = YEAR(_Fim),
+			            _NI & " a " & _NF & "/" & YEAR(_Ini),
+			            _NI & "/" & YEAR(_Ini) & " a " & _NF & "/" & YEAR(_Fim)
+			        )
+			    )
+			RETURN
+			    IF(
+			        _N >= _Tot,
+			        "Todos os períodos",
+			        FORMAT(_Ini, "dd/mm") & " a " & FORMAT(_Fim, "dd/mm/yyyy") & "  ·  " & _Mes
+			    )
+		displayFolder: 3 - Fechamento
+		lineageTag: 54760c18-b76a-45c3-9e41-e4a3a1fb99c4
+
+	/// Status escolhido no filtro (Realizado por padrão).
+	measure 'Status Sel' = SELECTEDVALUE(Sel_Status[Status], "Realizado")
+		isHidden
+		displayFolder: 4 - Status e Dica
+		lineageTag: 4627e3c4-95c8-4185-af87-f73c9c5e3034
+
+	/// Atividades de datas anteriores a hoje com EXECUÇÃO maior que zero.
+	measure 'Qtd Atividades Realizadas' = COALESCE(CALCULATE(COUNTROWS(Fato_Programacao), FILTER(Fato_Programacao, Fato_Programacao[Data] < [Data Referência] && Fato_Programacao[Execução] > 0)), 0)
+		formatString: #,0
+		displayFolder: 4 - Status e Dica
+		lineageTag: f7a600ab-22f2-412d-9bf5-823141e8f781
+
+	/// OSs distintas com atividade realizada (EXECUÇÃO > 0, data anterior a hoje).
+	measure 'Qtd OSs Realizadas' = COALESCE(CALCULATE(DISTINCTCOUNT(Fato_Programacao[Ordem]), FILTER(Fato_Programacao, Fato_Programacao[Data] < [Data Referência] && Fato_Programacao[Execução] > 0)), 0)
+		formatString: #,0
+		displayFolder: 4 - Status e Dica
+		lineageTag: 83b31ef7-6440-4be3-88b0-5e0922d95acb
+
+	measure 'Card Atividades' = IF([Status Sel] = "Realizado", [Qtd Atividades Realizadas], [Qtd Atividades])
+		formatString: #,0
+		displayFolder: 4 - Status e Dica
+		lineageTag: fd624771-64af-4b9e-a195-7c2b97c4ec84
+
+	measure 'Card OSs' = IF([Status Sel] = "Realizado", [Qtd OSs Realizadas], [Qtd OSs])
+		formatString: #,0
+		displayFolder: 4 - Status e Dica
+		lineageTag: 7f038c2a-6930-4b3d-95dc-12d47c3108f3
+
+	measure 'Card HH' = IF([Status Sel] = "Realizado", [TRAB Realizado], [Horas Programadas])
+		formatString: #,0.0
+		displayFolder: 4 - Status e Dica
+		lineageTag: 32b5570f-255e-4062-b95c-fdee03434ab7
+
+	measure 'Título Card Atividades' = "Atividades - " & [Status Sel]
+		isHidden
+		displayFolder: 4 - Status e Dica
+		lineageTag: 83d8d4d5-5dfd-4b28-80df-502173e7981d
+
+	measure 'Título Card OSs' = "Ordens (OS) - " & [Status Sel]
+		isHidden
+		displayFolder: 4 - Status e Dica
+		lineageTag: 01913331-4855-48f7-9697-8312125e3f6a
+
+	measure 'Título Card HH' = "Horas (HH) - " & [Status Sel]
+		isHidden
+		displayFolder: 4 - Status e Dica
+		lineageTag: 1340f71f-e800-47db-b654-802088213271
+
+	/// Coluna 'Programado' da dica de ferramenta da matriz.
+	measure 'Tip Programado' =
+			SWITCH(
+			    SELECTEDVALUE(Sel_Indicador[Indicador Ordem]),
+			    1, FORMAT([Qtd Atividades], "#,0"),
+			    2, FORMAT([Qtd OSs], "#,0"),
+			    3, FORMAT([Horas Programadas], "#,0.0")
+			)
+		displayFolder: 4 - Status e Dica
+		lineageTag: 1ec216d7-a39f-402e-b63a-a4bdde373885
+
+	/// Coluna 'Realizado' da dica de ferramenta da matriz.
+	measure 'Tip Realizado' =
+			SWITCH(
+			    SELECTEDVALUE(Sel_Indicador[Indicador Ordem]),
+			    1, FORMAT([Qtd Atividades Realizadas], "#,0"),
+			    2, FORMAT([Qtd OSs Realizadas], "#,0"),
+			    3, FORMAT([TRAB Realizado], "#,0.0")
+			)
+		displayFolder: 4 - Status e Dica
+		lineageTag: 7b1bf0b0-5520-4fc5-9ba9-32ab4473d548
+
+	measure 'Comparação Rótulo' = IF(DISTINCTCOUNT(Dim_Calendario[Semana ISO]) = 1, "vs. semana anterior", "vs. período anterior")
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: ef50e323-1a10-484e-a60f-c0ce6ff1da9c
+
+	measure 'Atividades Anterior' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Prev = SELECTCOLUMNS(VALUES(Dim_Calendario[Início da Semana]), "d", Dim_Calendario[Início da Semana] - 7 * _N)
+			RETURN
+			IF(_N >= _Tot, BLANK(), CALCULATE([Card Atividades], ALL(Dim_Calendario), TREATAS(_Prev, Dim_Calendario[Início da Semana])))
+		formatString: #,0
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: e332d5ce-9185-4d08-922b-a2dcb2994f25
+
+	measure 'OSs Anterior' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Prev = SELECTCOLUMNS(VALUES(Dim_Calendario[Início da Semana]), "d", Dim_Calendario[Início da Semana] - 7 * _N)
+			RETURN
+			IF(_N >= _Tot, BLANK(), CALCULATE([Card OSs], ALL(Dim_Calendario), TREATAS(_Prev, Dim_Calendario[Início da Semana])))
+		formatString: #,0
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: ad09ee89-bc70-4686-baa0-2aa037b4d3d0
+
+	measure 'HH Anterior' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Prev = SELECTCOLUMNS(VALUES(Dim_Calendario[Início da Semana]), "d", Dim_Calendario[Início da Semana] - 7 * _N)
+			RETURN
+			IF(_N >= _Tot, BLANK(), CALCULATE([Card HH], ALL(Dim_Calendario), TREATAS(_Prev, Dim_Calendario[Início da Semana])))
+		formatString: #,0.0
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: a536c04e-5f6c-4e14-bf9b-2a61ac472a56
+
+	measure 'HH Apontado Anterior' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Prev = SELECTCOLUMNS(VALUES(Dim_Calendario[Início da Semana]), "d", Dim_Calendario[Início da Semana] - 7 * _N)
+			RETURN
+			IF(_N >= _Tot, BLANK(), CALCULATE([HH Apontado], ALL(Dim_Calendario), TREATAS(_Prev, Dim_Calendario[Início da Semana])))
+		formatString: #,0.0
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 41a73560-70fc-44b2-a2a1-c53e3c641d4e
+
+	measure 'Subutilizado Anterior' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Prev = SELECTCOLUMNS(VALUES(Dim_Calendario[Início da Semana]), "d", Dim_Calendario[Início da Semana] - 7 * _N)
+			RETURN
+			IF(_N >= _Tot, BLANK(), CALCULATE([HH Subutilizado], ALL(Dim_Calendario), TREATAS(_Prev, Dim_Calendario[Início da Semana])))
+		formatString: #,0.0
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 519c76e5-47e4-4aba-ad7e-741bfd645ec3
+
+	measure 'Pct Subutilizado Anterior' =
+			VAR _N = DISTINCTCOUNT(Dim_Calendario[Semana ISO])
+			VAR _Tot = CALCULATE(DISTINCTCOUNT(Dim_Calendario[Semana ISO]), ALL(Dim_Calendario))
+			VAR _Prev = SELECTCOLUMNS(VALUES(Dim_Calendario[Início da Semana]), "d", Dim_Calendario[Início da Semana] - 7 * _N)
+			RETURN
+			IF(_N >= _Tot, BLANK(), CALCULATE([% HH Subutilizado], ALL(Dim_Calendario), TREATAS(_Prev, Dim_Calendario[Início da Semana])))
+		formatString: 0.0%
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 0ce0cb68-24e7-411e-b69b-77337c0ab80c
+
+	measure 'Delta Atividades' =
+			VAR _C = [Card Atividades]
+			VAR _P = [Atividades Anterior]
+			VAR _D = DIVIDE(_C - _P, _P)
+			RETURN
+			IF(ISBLANK(_P) || _P = 0, "sem base para comparar", IF(_D = 0, "● ", IF(_D > 0, "▲ +", "▼ -")) & FORMAT(ABS(_D), "0.0%") & "  " & [Comparação Rótulo])
+		displayFolder: 5 - Variação
+		lineageTag: 087fbec4-a515-4b69-aca2-cbb8a182ef09
+
+	measure 'Cor Delta Atividades' =
+			VAR _C = [Card Atividades]
+			VAR _P = [Atividades Anterior]
+			RETURN
+			IF(ISBLANK(_P) || _P = 0 || _C = _P, "#A4ACBA", IF(_C > _P, "#4FC08D", "#F0627A"))
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 0b37972c-7595-4407-a436-4c1e66d70cd9
+
+	measure 'Delta OSs' =
+			VAR _C = [Card OSs]
+			VAR _P = [OSs Anterior]
+			VAR _D = DIVIDE(_C - _P, _P)
+			RETURN
+			IF(ISBLANK(_P) || _P = 0, "sem base para comparar", IF(_D = 0, "● ", IF(_D > 0, "▲ +", "▼ -")) & FORMAT(ABS(_D), "0.0%") & "  " & [Comparação Rótulo])
+		displayFolder: 5 - Variação
+		lineageTag: aede66e5-986e-4aad-8b4b-ff5c9725ce72
+
+	measure 'Cor Delta OSs' =
+			VAR _C = [Card OSs]
+			VAR _P = [OSs Anterior]
+			RETURN
+			IF(ISBLANK(_P) || _P = 0 || _C = _P, "#A4ACBA", IF(_C > _P, "#4FC08D", "#F0627A"))
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 9b26ccc0-7f32-4947-88c5-8880e9083331
+
+	measure 'Delta HH' =
+			VAR _C = [Card HH]
+			VAR _P = [HH Anterior]
+			VAR _D = DIVIDE(_C - _P, _P)
+			RETURN
+			IF(ISBLANK(_P) || _P = 0, "sem base para comparar", IF(_D = 0, "● ", IF(_D > 0, "▲ +", "▼ -")) & FORMAT(ABS(_D), "0.0%") & "  " & [Comparação Rótulo])
+		displayFolder: 5 - Variação
+		lineageTag: 312a1923-1b63-4148-bc9c-75eb498a2ad9
+
+	measure 'Cor Delta HH' =
+			VAR _C = [Card HH]
+			VAR _P = [HH Anterior]
+			RETURN
+			IF(ISBLANK(_P) || _P = 0 || _C = _P, "#A4ACBA", IF(_C > _P, "#4FC08D", "#F0627A"))
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 873d83a2-b06a-4b1f-8ad8-d88e4d24c2d5
+
+	measure 'Delta Subutilizado' =
+			VAR _C = [HH Subutilizado]
+			VAR _P = [Subutilizado Anterior]
+			VAR _B = [HH Apontado Anterior]
+			VAR _D = _C - _P
+			RETURN
+			IF(ISBLANK(_B) || _B = 0, "sem base para comparar", IF(_D = 0, "● ", IF(_D > 0, "▲ +", "▼ -")) & FORMAT(ABS(_D), "#,0.0") & " h  " & [Comparação Rótulo])
+		displayFolder: 5 - Variação
+		lineageTag: 7813faf5-6d4f-41ed-bf19-4629698363dc
+
+	measure 'Cor Delta Subutilizado' =
+			VAR _C = [HH Subutilizado]
+			VAR _P = [Subutilizado Anterior]
+			VAR _B = [HH Apontado Anterior]
+			RETURN
+			IF(ISBLANK(_B) || _B = 0 || _C = _P, "#A4ACBA", IF(_C > _P, "#F0627A", "#4FC08D"))
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 4cfddd8d-da4a-4437-a7c9-4dd31d88c9e5
+
+	measure 'Delta Pct Subutilizado' =
+			VAR _C = [% HH Subutilizado]
+			VAR _P = [Pct Subutilizado Anterior]
+			VAR _B = [HH Apontado Anterior]
+			VAR _D = _C - _P
+			RETURN
+			IF(ISBLANK(_B) || _B = 0, "sem base para comparar", IF(_D = 0, "● ", IF(_D > 0, "▲ +", "▼ -")) & FORMAT(ABS(_D) * 100, "0.0") & " p.p.  " & [Comparação Rótulo])
+		displayFolder: 5 - Variação
+		lineageTag: 3fed9bcd-1ab5-43d5-8409-0a7fcc9567be
+
+	measure 'Cor Delta Pct Subutilizado' =
+			VAR _C = [% HH Subutilizado]
+			VAR _P = [Pct Subutilizado Anterior]
+			VAR _B = [HH Apontado Anterior]
+			RETURN
+			IF(ISBLANK(_B) || _B = 0 || _C = _P, "#A4ACBA", IF(_C > _P, "#F0627A", "#4FC08D"))
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: 8870c259-13b3-43f5-9b28-7034e993d721
+
+	measure 'Delta Aguardando' = "linhas sem EXECUÇÃO (D-1)"
+		displayFolder: 5 - Variação
+		lineageTag: bbd06827-1926-40d3-97f1-d153b911facf
+
+	measure 'Cor Delta Aguardando' = IF([Linhas Aguardando Apontamento] > 0, "#F28C28", "#A4ACBA")
+		isHidden
+		displayFolder: 5 - Variação
+		lineageTag: ae32a74d-7597-434c-b751-e2c2b53d5048
+
+	column x
+		isHidden
+		lineageTag: d479c50a-d27a-46cd-8180-048cb1289ca7
+		isNameInferred
+		sourceColumn: [x]
+
+	partition _Medidas = calculated
+		mode: import
+		source = ROW("x", 1)
+

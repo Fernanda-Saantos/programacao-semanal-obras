@@ -1,0 +1,16 @@
+# Vídeos de gravação e edição (o vídeo final está no YouTube)
+*.mp4
+*.mov
+
+# Arquivos locais do Power BI (cache de dados e configurações da máquina)
+.pbi/
+*.abf
+
+# Rascunhos internos
+Roteiro de gravação do vídeo.md
+Notion - Programação Semanal de Obras.md
+
+# Temporários do Excel / Windows
+~$*
+Thumbs.db
+desktop.ini

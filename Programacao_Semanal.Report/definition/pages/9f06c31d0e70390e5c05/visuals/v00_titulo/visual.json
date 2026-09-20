@@ -1,0 +1,72 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "v00_titulo",
+  "position": {
+    "x": 88,
+    "y": 16,
+    "z": 0,
+    "height": 56,
+    "width": 1200,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Programação Semanal  ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "26pt",
+                      "color": "#EEF2F8"
+                    }
+                  },
+                  {
+                    "value": "Baluarte Engenharia  -",
+                    "textStyle": {
+                      "fontSize": "16pt",
+                      "color": "#A4ACBA"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

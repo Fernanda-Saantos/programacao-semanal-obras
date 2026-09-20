@@ -1,0 +1,198 @@
+table Fato_Programacao
+	lineageTag: 2fafa8bf-e617-46ac-be0e-5d6a7aa95468
+
+	column Data
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: 4f7af4dc-2732-48e9-9f6c-7ddcda7b9ffc
+		summarizeBy: none
+		sourceColumn: Data
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Estrutura
+		dataType: string
+		lineageTag: 8f59c61d-6a16-442e-a8ea-f483751a8451
+		summarizeBy: none
+		sourceColumn: Estrutura
+
+	column 'Frente de Trabalho'
+		dataType: string
+		lineageTag: e8ce3019-b79c-45d0-a568-ae22e13561d5
+		summarizeBy: none
+		sourceColumn: Frente de Trabalho
+
+	column Tipo
+		dataType: string
+		lineageTag: 93842ca9-055b-48c2-a350-ed626e8f5e05
+		summarizeBy: none
+		sourceColumn: Tipo
+
+	column Ordem
+		dataType: string
+		lineageTag: 70ba371b-19ff-42ea-a616-13d10c52937a
+		summarizeBy: none
+		sourceColumn: Ordem
+
+	column Op
+		dataType: int64
+		formatString: 0
+		lineageTag: 678a7e01-0b51-4cd6-9f38-896700c08105
+		summarizeBy: sum
+		sourceColumn: Op
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Caminho Crítico'
+		dataType: string
+		lineageTag: 3a2b59a6-4c18-4174-8695-afa72b74de3f
+		summarizeBy: none
+		sourceColumn: Caminho Crítico
+
+	column 'Texto Breve'
+		dataType: string
+		lineageTag: de00c7c1-4f5e-44d2-bc86-327b9a26fbd4
+		summarizeBy: none
+		sourceColumn: Texto Breve
+
+	column Fiscal
+		dataType: string
+		lineageTag: 05bef64f-d891-4976-ab9e-a52a4c426f3a
+		summarizeBy: none
+		sourceColumn: Fiscal
+
+	column Encarregado
+		dataType: string
+		lineageTag: b2654352-cecd-4549-a871-df9316351311
+		summarizeBy: none
+		sourceColumn: Encarregado
+
+	column 'Equipamento / Recurso'
+		dataType: string
+		lineageTag: f06199d4-1c7f-4a6b-93c2-da239578e1d2
+		summarizeBy: none
+		sourceColumn: Equipamento / Recurso
+
+	column Dur
+		dataType: double
+		formatString: 0.0
+		lineageTag: ce7c9be4-2fc1-453e-9596-ab59d8004afe
+		summarizeBy: sum
+		sourceColumn: Dur
+
+		annotation SummarizationSetBy = Automatic
+
+	column Num
+		dataType: int64
+		formatString: 0
+		lineageTag: 6be340cd-18b0-4bd9-b932-f1033886aec1
+		summarizeBy: sum
+		sourceColumn: Num
+
+		annotation SummarizationSetBy = Automatic
+
+	column Execução
+		dataType: int64
+		formatString: 0
+		lineageTag: c7cff31c-ddf9-46b6-a061-e32b4476a4c1
+		summarizeBy: sum
+		sourceColumn: Execução
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Obs Empreiteira'
+		dataType: string
+		lineageTag: c28a72b3-ab76-456c-8285-ac94ac3e6253
+		summarizeBy: none
+		sourceColumn: Obs Empreiteira
+
+	column 'Obs Cliente'
+		dataType: string
+		lineageTag: 6b88e856-54fa-4aff-81b3-18a4cccd1a4a
+		summarizeBy: none
+		sourceColumn: Obs Cliente
+
+	column Retorno
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: ce6051bd-f3a0-4df4-8e3e-50cf8aa286f6
+		summarizeBy: none
+		sourceColumn: Retorno
+
+		variation Variation
+			isDefault
+			relationship: 9284b518-8772-4486-9366-fc4ff83d0e59
+			defaultHierarchy: LocalDateTable_a8cb96cd-960d-47a3-b856-b7d52afa1c52.'Hierarquia de datas'
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Origem
+		dataType: string
+		lineageTag: 653a76ea-dbcb-46a5-907e-328b447101ec
+		summarizeBy: none
+		sourceColumn: Origem
+
+	column 'HH Programado'
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 39416be8-51e6-4d83-bf64-14a5f8087827
+		summarizeBy: sum
+		sourceColumn: HH Programado
+
+	column 'Semana Programação'
+		dataType: int64
+		formatString: 0
+		lineageTag: a6c66867-11a8-4ad4-be77-a9cf037adc27
+		summarizeBy: sum
+		sourceColumn: Semana Programação
+
+		annotation SummarizationSetBy = Automatic
+
+	column Id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 81817f07-2c29-4163-88fd-fed1edd280c8
+		summarizeBy: count
+		sourceColumn: Id
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Arquivo de origem da linha (uma planilha por semana).
+	column Arquivo
+		dataType: string
+		lineageTag: 86d6086e-b6e9-4596-9687-038de3721f11
+		summarizeBy: none
+		sourceColumn: Arquivo
+
+	/// Projeto da linha (aba/pasta/arquivo, conforme o parâmetro ProjetoPor, após o de-para).
+	column Projeto
+		dataType: string
+		lineageTag: e55d6a42-38c6-4ef1-b264-5953919d4624
+		summarizeBy: none
+		sourceColumn: Projeto
+
+	/// Para onde a mão de obra sobrante foi realocada (OS/Op ou atividade). Vem da coluna 'DESTINO DA REALOCAÇÃO' da planilha (opcional).
+	column 'Destino da Realocação'
+		dataType: string
+		lineageTag: 2059c80a-5112-4c00-bd94-841aba734115
+		summarizeBy: none
+		sourceColumn: Destino da Realocação
+
+	/// Quantidade de pessoas remanejadas desta atividade. Vem da coluna 'QTD REMANEJADA' da planilha (opcional).
+	column 'Qtd Remanejada'
+		dataType: double
+		formatString: #,0.##
+		lineageTag: 6a5c8d06-c88e-4954-a275-625eb7ae007c
+		summarizeBy: sum
+		sourceColumn: Qtd Remanejada
+
+	partition Fato_Programacao = m
+		mode: import
+		source =
+				let
+				  Fonte = Base_Programacao,
+				  Chave = Table.AddIndexColumn(Fonte, "Id", 1, 1, Int64.Type)
+				in
+				  Chave
+

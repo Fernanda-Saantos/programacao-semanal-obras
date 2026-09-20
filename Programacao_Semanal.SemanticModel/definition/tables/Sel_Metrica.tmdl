@@ -1,0 +1,28 @@
+/// Linhas da matriz calendário (Dia + uma linha de atividades por fiscal). Tabela de apoio, não relacionada.
+table Sel_Metrica
+	lineageTag: a8d70c16-7ad7-4b01-b010-5e2e285f3adc
+
+	column Métrica
+		lineageTag: de3751a4-29e3-4add-a527-851c7d71f3a6
+		isNameInferred
+		sourceColumn: [Métrica]
+		sortByColumn: 'Métrica Ordem'
+
+	column 'Métrica Ordem'
+		isHidden
+		lineageTag: 40267bfc-eeba-4e8c-9aa8-8aad05766415
+		isNameInferred
+		sourceColumn: [Métrica Ordem]
+
+	partition Sel_Metrica = calculated
+		mode: import
+		source =
+				UNION(
+				  ROW("Métrica", "Dia", "Métrica Ordem", 1),
+				  SELECTCOLUMNS(
+				    Dim_Fiscal,
+				    "Métrica", "Ativ. · " & Dim_Fiscal[Fiscal],
+				    "Métrica Ordem", 100 + COUNTROWS(FILTER(ALL(Dim_Fiscal[Fiscal]), Dim_Fiscal[Fiscal] < EARLIER(Dim_Fiscal[Fiscal])))
+				  )
+				)
+

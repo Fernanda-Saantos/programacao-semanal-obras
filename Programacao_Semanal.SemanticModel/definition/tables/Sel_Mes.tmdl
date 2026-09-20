@@ -1,0 +1,19 @@
+table Sel_Mes
+	lineageTag: a7bfdcc7-fb4b-4a36-b062-2548239468f5
+
+	column Ano-Mês
+		lineageTag: a6285f24-23ca-4d73-8990-625e37ba44ab
+		isNameInferred
+		sourceColumn: Dim_Calendario[Ano-Mês]
+		sortByColumn: 'Ano-Mês Ordem'
+
+	column 'Ano-Mês Ordem'
+		isHidden
+		lineageTag: 67cb4dfe-0986-4beb-948a-72eff6de85b5
+		isNameInferred
+		sourceColumn: Dim_Calendario[Ano-Mês Ordem]
+
+	partition Sel_Mes = calculated
+		mode: import
+		source = SUMMARIZE(Dim_Calendario, Dim_Calendario[Ano-Mês], Dim_Calendario[Ano-Mês Ordem])
+

@@ -1,0 +1,19 @@
+table Dim_Tipo_Ordem
+	lineageTag: 1b3228cf-1bb1-4df7-94d0-41dacd2a1923
+
+	column Tipo
+		dataType: string
+		lineageTag: bbf06024-1b3c-4b2e-affd-3769f6b02d88
+		summarizeBy: none
+		sourceColumn: Tipo
+
+	partition Dim_Tipo_Ordem = m
+		mode: import
+		source =
+				let
+				  Fonte = Table.SelectColumns(Base_Programacao, {"Tipo"}),
+				  Dist = Table.Distinct(Fonte),
+				  Ord = Table.Sort(Dist, {{"Tipo", Order.Ascending}})
+				in
+				  Ord
+

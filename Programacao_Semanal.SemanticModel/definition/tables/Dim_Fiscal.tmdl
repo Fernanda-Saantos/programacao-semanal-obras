@@ -1,0 +1,35 @@
+table Dim_Fiscal
+	lineageTag: 55163271-7ce8-43c8-9118-960e80e1468d
+
+	column Fiscal
+		dataType: string
+		lineageTag: b055f6d8-9f95-4e70-89fd-8dda8c007162
+		summarizeBy: none
+		sourceColumn: Fiscal
+
+	/// Cor pastel do fiscal no calendário (storytelling visual).
+	column Cor =
+			VAR _F = Dim_Fiscal[Fiscal]
+			VAR _Rank = COUNTROWS(FILTER(ALL(Dim_Fiscal[Fiscal]), Dim_Fiscal[Fiscal] < _F))
+			RETURN
+			SWITCH(
+			  UPPER(_F),
+			  "DUARTE", "#CFE0F7",
+			  "NOGUEIRA", "#FBDDBA",
+			  "PRADO", "#D5EBD9",
+			  "NÃO INFORMADO", "#E4E5E5",
+			  SWITCH(MOD(_Rank, 4), 0, "#CBD8F4", 1, "#EBB8C5", 2, "#F5F5B2", "#FAE8B8")
+			)
+		dataType: string
+		lineageTag: 14b3e195-681d-433c-acf1-a9e8f01783e8
+
+	partition Dim_Fiscal = m
+		mode: import
+		source =
+				let
+				  Fonte = Table.SelectColumns(Base_Programacao, {"Fiscal"}),
+				  Dist = Table.Distinct(Fonte),
+				  Ord = Table.Sort(Dist, {{"Fiscal", Order.Ascending}})
+				in
+				  Ord
+

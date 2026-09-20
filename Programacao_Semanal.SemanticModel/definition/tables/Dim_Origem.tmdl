@@ -1,0 +1,19 @@
+table Dim_Origem
+	lineageTag: 66c1bdba-5d7a-4a5e-b183-fa6b646e3153
+
+	column Origem
+		dataType: string
+		lineageTag: ceb2af46-8c0a-4b65-87fb-9c4876b92b28
+		summarizeBy: none
+		sourceColumn: Origem
+
+	partition Dim_Origem = m
+		mode: import
+		source =
+				let
+				  Fonte = Table.SelectColumns(Base_Programacao, {"Origem"}),
+				  Dist = Table.Distinct(Fonte),
+				  Ord = Table.Sort(Dist, {{"Origem", Order.Descending}})
+				in
+				  Ord
+

@@ -1,0 +1,19 @@
+table Dim_Encarregado
+	lineageTag: 64ba5c05-64ae-4e32-994b-9ceea4ea1f2b
+
+	column Encarregado
+		dataType: string
+		lineageTag: 9a4a82d4-9051-47cd-a4b4-c02db2ccb7fb
+		summarizeBy: none
+		sourceColumn: Encarregado
+
+	partition Dim_Encarregado = m
+		mode: import
+		source =
+				let
+				  Fonte = Table.SelectColumns(Base_Programacao, {"Encarregado"}),
+				  Dist = Table.Distinct(Fonte),
+				  Ord = Table.Sort(Dist, {{"Encarregado", Order.Ascending}})
+				in
+				  Ord
+

@@ -1,0 +1,139 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/2.1.0/schema.json",
+  "displayName": "Filtros - fechar",
+  "name": "bm_filtros_fechar",
+  "options": {
+    "applyOnlyToTargetVisuals": true,
+    "targetVisualNames": [
+      "p0_fundo",
+      "p1_titulo",
+      "p2_fechar",
+      "v08_semana",
+      "v08b_status",
+      "v01_mes",
+      "v09_projeto",
+      "v02_encarregado",
+      "v03_fiscal",
+      "v04_ct",
+      "v05_estrutura",
+      "v06_tipo",
+      "v07_origem"
+    ],
+    "suppressActiveSection": true,
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.0",
+    "activeSection": "9f06c31d0e70390e5c05",
+    "sections": {
+      "9f06c31d0e70390e5c05": {
+        "visualContainers": {
+          "p0_fundo": {
+            "singleVisual": {
+              "visualType": "textbox",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "p1_titulo": {
+            "singleVisual": {
+              "visualType": "textbox",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "p2_fechar": {
+            "singleVisual": {
+              "visualType": "actionButton",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v08_semana": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v08b_status": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v01_mes": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v09_projeto": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v02_encarregado": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v03_fiscal": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v04_ct": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v05_estrutura": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v06_tipo": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          },
+          "v07_origem": {
+            "singleVisual": {
+              "visualType": "slicer",
+              "display": {
+                "mode": "hidden"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+relationship Fato_Calendario
+	fromColumn: Fato_Programacao.Data
+	toColumn: Dim_Calendario.Data
+
+relationship Fato_Encarregado
+	fromColumn: Fato_Programacao.Encarregado
+	toColumn: Dim_Encarregado.Encarregado
+
+relationship Fato_Fiscal
+	fromColumn: Fato_Programacao.Fiscal
+	toColumn: Dim_Fiscal.Fiscal
+
+relationship Fato_Estrutura
+	fromColumn: Fato_Programacao.Estrutura
+	toColumn: Dim_Estrutura.Estrutura
+
+relationship Fato_CT
+	fromColumn: Fato_Programacao.'Frente de Trabalho'
+	toColumn: Dim_Frente.'Frente de Trabalho'
+
+relationship Fato_Tipo
+	fromColumn: Fato_Programacao.Tipo
+	toColumn: Dim_Tipo_Ordem.Tipo
+
+relationship Fato_Origem
+	fromColumn: Fato_Programacao.Origem
+	toColumn: Dim_Origem.Origem
+
+relationship 9284b518-8772-4486-9366-fc4ff83d0e59
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Fato_Programacao.Retorno
+	toColumn: LocalDateTable_a8cb96cd-960d-47a3-b856-b7d52afa1c52.Date
+
+relationship Fato_Projeto
+	fromColumn: Fato_Programacao.Projeto
+	toColumn: Dim_Projeto.Projeto
+

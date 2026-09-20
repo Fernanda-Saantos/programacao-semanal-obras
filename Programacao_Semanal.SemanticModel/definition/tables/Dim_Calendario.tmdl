@@ -1,0 +1,118 @@
+table Dim_Calendario
+	lineageTag: 6171c168-2d80-4002-ab52-9512f6bb3a13
+	dataCategory: Time
+
+	column Data
+		isUnique
+		formatString: dd/mm/yyyy
+		lineageTag: 9a814cbb-1406-46b4-9c7a-b6beb107d650
+		sourceColumn: [Date]
+
+	column Ano
+		lineageTag: 17358978-8406-4e59-8686-ee5c6ddc48ab
+		isNameInferred
+		sourceColumn: [Ano]
+
+	column 'Mês Número'
+		lineageTag: 9618171f-2c05-4eba-a59f-76fc2cf81119
+		isNameInferred
+		sourceColumn: [Mês Número]
+
+	column Mês
+		lineageTag: 127f6158-ec95-4484-8c01-8d31437403cd
+		isNameInferred
+		sourceColumn: [Mês]
+		sortByColumn: 'Mês Número'
+
+	column Ano-Mês
+		lineageTag: 0ac8a709-8f25-46b9-8dc4-74b269f9d3d3
+		isNameInferred
+		sourceColumn: [Ano-Mês]
+		sortByColumn: 'Ano-Mês Ordem'
+
+	column 'Ano-Mês Ordem'
+		lineageTag: 3dc9fbb6-6d19-41a4-bcb0-44fdcdca9c1c
+		isNameInferred
+		sourceColumn: [Ano-Mês Ordem]
+
+	column Dia
+		lineageTag: 22fb1282-52db-4636-8297-1916ee674d57
+		isNameInferred
+		sourceColumn: [Dia]
+
+	column 'Dia da Semana Número'
+		lineageTag: f229bae5-afc2-4a9b-a5f8-eff5be679496
+		isNameInferred
+		sourceColumn: [Dia da Semana Número]
+
+	column 'Dia da Semana'
+		lineageTag: 9e1c34fd-8926-402f-a74c-b66dc90162c1
+		isNameInferred
+		sourceColumn: [Dia da Semana]
+		sortByColumn: 'Dia da Semana Número'
+
+	column 'Início da Semana'
+		formatString: dd/mm/yyyy
+		lineageTag: 68253839-c7e1-465c-8b03-1533cb76e103
+		isNameInferred
+		sourceColumn: [Início da Semana]
+
+	column 'Semana ISO'
+		lineageTag: 4bae4076-4850-4d9d-9d15-29f2d266d2e7
+		isNameInferred
+		sourceColumn: [Semana ISO]
+
+	column Semana
+		lineageTag: bcdf3457-91af-4295-9dd6-2c90e2fef630
+		isNameInferred
+		sourceColumn: [Semana]
+
+	column 'Semana Rótulo' = "Sem " & [Semana ISO] & "  (" & FORMAT([Início da Semana], "dd/mm") & " a " & FORMAT([Início da Semana] + 6, "dd/mm") & ")"
+		dataType: string
+		lineageTag: eb933121-8a7f-4692-b20f-5530bd31f7a9
+		sortByColumn: 'Início da Semana'
+
+	/// Semanas (seg-dom) de distância até a semana de hoje: 0 = semana atual, -1 = anterior, 1 = próxima.
+	column 'Semana Rel Ordem' = DIVIDE([Início da Semana] - ([Data Referência] - WEEKDAY([Data Referência], 2) + 1), 7)
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 08cf9ea9-0ed7-45c8-9e29-d73fd4a76bdf
+		summarizeBy: none
+
+	/// Filtro de semana: 'Semana atual' é um rótulo fixo (a seleção salva acompanha o calendário a cada atualização); as demais mostram a semana real.
+	column 'Semana Relativa' = IF([Semana Rel Ordem] = 0, "Semana atual", [Semana Rótulo])
+		dataType: string
+		lineageTag: 8af552e8-a779-4453-895a-61cc1dac576c
+		summarizeBy: none
+		sortByColumn: 'Semana Rel Ordem'
+
+	/// 1 = semana com programação carregada ou semana atual (usado para o filtro de semana listar só o que interessa).
+	column 'Semana Lista' = IF([Semana Rel Ordem] = 0 || CALCULATE(COUNTROWS(Fato_Programacao), ALLEXCEPT(Dim_Calendario, Dim_Calendario[Início da Semana])) > 0, 1, 0)
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: abf87b5b-bd75-408e-8bde-8fa1bc0793ec
+		summarizeBy: none
+
+	partition Dim_Calendario = calculated
+		mode: import
+		source =
+				VAR _Ini = DATE(MIN(YEAR(MIN(Fato_Programacao[Data])), YEAR(TODAY())), 1, 1)
+				VAR _Fim = DATE(MAX(YEAR(MAX(Fato_Programacao[Data])), YEAR(TODAY())), 12, 31)
+				RETURN
+				ADDCOLUMNS(
+				  CALENDAR(_Ini, _Fim),
+				  "Ano", YEAR([Date]),
+				  "Mês Número", MONTH([Date]),
+				  "Mês", FORMAT([Date], "mmmm", "pt-BR"),
+				  "Ano-Mês", FORMAT([Date], "mmm/yyyy", "pt-BR"),
+				  "Ano-Mês Ordem", YEAR([Date]) * 100 + MONTH([Date]),
+				  "Dia", DAY([Date]),
+				  "Dia da Semana Número", WEEKDAY([Date], 2),
+				  "Dia da Semana", SWITCH(WEEKDAY([Date], 2), 1, "seg", 2, "ter", 3, "qua", 4, "qui", 5, "sex", 6, "sáb", "dom"),
+				  "Início da Semana", [Date] - WEEKDAY([Date], 2) + 1,
+				  "Semana ISO", WEEKNUM([Date], 21),
+				  "Semana", "Semana " & WEEKNUM([Date], 21)
+				)
+

@@ -1,0 +1,81 @@
+/// Lê TODAS as planilhas semanais da pasta (e subpastas), local ou SharePoint, e TODAS as abas de programação de cada arquivo (cada uma = um projeto). Uma semana por projeto = um arquivo; se houver duas versões, vale a mais recente (não carrega).
+expression Base_Programacao =
+		let
+		  PastaBase = Text.Lower(PastaProgramacao),
+		  Raiz = Text.TrimEnd(PastaProgramacao, {"\", "/"}),
+		  Arquivos0 = if SiteSharePoint = "" then Folder.Files(PastaProgramacao) else Table.SelectRows(SharePoint.Files(SiteSharePoint, [ApiVersion = 15]), each Text.StartsWith(Text.Lower([Folder Path]), PastaBase)),
+		  Arquivos = Table.SelectRows(Arquivos0, each List.Contains({".xlsm", ".xlsx"}, Text.Lower([Extension])) and not Text.StartsWith([Name], "~$")),
+		  Abertos = Table.AddColumn(Table.SelectColumns(Arquivos, {"Name", "Folder Path", "Date modified", "Content"}), "Abas", each try Excel.Workbook([Content], null, true) otherwise null),
+		  ComAbas = Table.SelectRows(Abertos, each [Abas] <> null),
+		  Expandido = Table.ExpandTableColumn(Table.RemoveColumns(ComAbas, {"Content"}), "Abas", {"Name", "Kind", "Data"}, {"Aba", "Kind", "Data"}),
+		  Programacao = Table.SelectRows(Expandido, each [Kind] = "Sheet" and (try Text.Upper(Text.Trim(Text.From([Data]{3}[Column1]))) = "DATA PROGRAMADA" otherwise false)),
+		  Ler = (aba as table, nome as text, nomeAba as text, pasta as text) as table =>
+		    let
+		      Semana = try Number.From(Text.Trim(Text.AfterDelimiter(Text.From(aba{2}[Column1]), ":"))) otherwise null,
+		      Corpo = Table.Skip(aba, 4),
+		      Cab = try aba{3} otherwise [],
+		      AcharCol = (titulo as text) as nullable text => List.First(List.Select(Record.FieldNames(Cab), each (try Text.Upper(Text.Trim(Text.From(Record.Field(Cab, _)))) otherwise "") = titulo), null),
+		      ColDestino = AcharCol("DESTINO DA REALOCAÇÃO"),
+		      ColQtdRem = AcharCol("QTD REMANEJADA"),
+		      Extras = List.RemoveNulls({ColDestino, ColQtdRem}),
+		      Sel = Table.SelectColumns(Corpo, List.Combine({{"Column1","Column2","Column3","Column4","Column5","Column6","Column7","Column8","Column9","Column10","Column11","Column12","Column13","Column14","Column15","Column16","Column20"}, Extras})),
+		      Preenchidas = Table.SelectRows(Sel, each [Column1] <> null or [Column5] <> null),
+		      Ren = Table.RenameColumns(Preenchidas, {{"Column1","DataRaw"},{"Column2","Estrutura"},{"Column3","Frente de Trabalho"},{"Column4","Tipo"},{"Column5","Ordem"},{"Column6","Op"},{"Column7","Caminho Crítico"},{"Column8","Texto Breve"},{"Column9","Fiscal"},{"Column10","Encarregado"},{"Column11","Equipamento / Recurso"},{"Column12","Dur"},{"Column13","Num"},{"Column14","Execução"},{"Column15","Obs Empreiteira"},{"Column16","Obs Cliente"},{"Column20","Retorno"}}),
+		      RenExtra = Table.RenameColumns(Ren, List.RemoveNulls({if ColDestino <> null then {ColDestino, "Destino da Realocação"} else null, if ColQtdRem <> null then {ColQtdRem, "Qtd Remanejada"} else null})),
+		      Gar1 = if Table.HasColumns(RenExtra, "Destino da Realocação") then RenExtra else Table.AddColumn(RenExtra, "Destino da Realocação", each null, type text),
+		      Gar2 = if Table.HasColumns(Gar1, "Qtd Remanejada") then Gar1 else Table.AddColumn(Gar1, "Qtd Remanejada", each null, type number),
+		      AddData = Table.AddColumn(Gar2, "Data", each try Date.From([DataRaw]) otherwise null, type date),
+		      Preench = Table.FillDown(AddData, {"Data"}),
+		      SoOper = Table.SelectRows(Preench, each Value.Is([Ordem], type number)),
+		      Limpa = Table.RemoveColumns(SoOper, {"DataRaw"}),
+		      Tipos = Table.TransformColumnTypes(Limpa, {{"Estrutura",type text},{"Frente de Trabalho",type text},{"Tipo",type text},{"Ordem",type text},{"Op",Int64.Type},{"Caminho Crítico",type text},{"Texto Breve",type text},{"Fiscal",type text},{"Encarregado",type text},{"Equipamento / Recurso",type text},{"Dur",type number},{"Num",Int64.Type},{"Execução",Int64.Type},{"Obs Empreiteira",type text},{"Obs Cliente",type text},{"Retorno",type date},{"Destino da Realocação",type text},{"Qtd Remanejada",type number}}),
+		      Trim = Table.TransformColumns(Tipos, {{"Estrutura",each if _ = null then null else Text.Trim(_),type text},{"Texto Breve",each if _ = null then null else Text.Trim(_),type text},{"Fiscal",each if _ = null then null else Text.Trim(_),type text},{"Encarregado",each if _ = null then null else Text.Trim(_),type text}}),
+		      Origem = Table.AddColumn(Trim, "Origem", each if Text.Lower(Text.Trim([Frente de Trabalho] ?? "")) = "extra" or Text.Contains(Text.Upper([Estrutura] ?? ""), "EXTRA") then "Extra" else "Programada", type text),
+		      Nulos = Table.ReplaceValue(Origem, null, "Não informado", Replacer.ReplaceValue, {"Estrutura","Frente de Trabalho","Tipo","Fiscal","Encarregado"}),
+		      HH = Table.AddColumn(Nulos, "HH Programado", each if [Dur] <> null and [Num] <> null then [Dur] * [Num] else 0, type number),
+		      Sem = Table.AddColumn(HH, "Semana Programação", each Semana, Int64.Type),
+		      Arq = Table.AddColumn(Sem, "Arquivo", each nome, type text),
+		      Rel = Text.Replace(Text.Middle(pasta, Text.Length(Raiz)), "/", "\"),
+		      Seg = List.Select(Text.Split(Rel, "\"), each _ <> ""),
+		      DoArquivo = Text.Trim(Text.AfterDelimiter(Text.BeforeDelimiter(nome, ".", {0, RelativePosition.FromEnd}), " - ")),
+		      ProjRaw = if ProjetoPor = "Pasta" and List.Count(Seg) > 0 then Seg{0} else if ProjetoPor = "Arquivo" and DoArquivo <> "" then DoArquivo else nomeAba,
+		      ProjNome = try DeParaProjeto{[Chave = ProjRaw]}[Projeto] otherwise ProjRaw
+		    in
+		      Table.AddColumn(Arq, "Projeto", each ProjNome, type text),
+		  Tabelas = Table.AddColumn(Programacao, "T", each try Ler([Data], [Name], [Aba], [Folder Path]) otherwise null),
+		  Validas = Table.SelectRows(Tabelas, each [T] <> null and Table.RowCount([T]) > 0),
+		  ComSemana = Table.AddColumn(Validas, "InicioSemana", each Date.StartOfWeek(List.Min([T][Data]), Day.Monday), type date),
+		  ComProj = Table.AddColumn(ComSemana, "ProjChave", each List.First([T][Projeto]), type text),
+		  Ordenado = Table.Buffer(Table.Sort(ComProj, {{"Date modified", Order.Descending}})),
+		  UmPorSemana = Table.Distinct(Ordenado, {"InicioSemana", "ProjChave"}),
+		  Final = Table.Combine(UmPorSemana[T])
+		in
+		  Final
+	lineageTag: 8d9e4877-f3e3-4377-8ee7-55830dab4e89
+
+/// Pasta com as planilhas semanais (uma por semana; subpastas são lidas). Local: C:\...\Pasta. SharePoint: URL da pasta, ex.: https://empresa.sharepoint.com/sites/Time/Shared Documents/Programacao
+expression PastaProgramacao = "C:\Projetos\Programacao_Semanal" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: b097d55a-f58b-4009-82ef-34cf0de7edd6
+
+	annotation PBI_ResultType = Text
+
+/// URL do site do SharePoint (ex.: https://empresa.sharepoint.com/sites/Time). Deixe vazio para ler uma pasta local.
+expression SiteSharePoint = "" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=false]
+	lineageTag: 6d0f2a5c-93e1-4a0b-b1d6-2f5a7c4e9b31
+
+	annotation PBI_ResultType = Text
+
+/// Como identificar o projeto de cada linha: 'Aba' (nome da aba, padrão), 'Pasta' (1ª subpasta dentro de PastaProgramacao, ex.: B5) ou 'Arquivo' (texto do nome do arquivo após ' - ').
+expression ProjetoPor = "Aba" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true, List={"Aba", "Pasta", "Arquivo"}, DefaultValue="Aba"]
+	lineageTag: 1d4477a3-f814-4da1-870a-e0b85121a6d7
+
+	annotation PBI_ResultType = Text
+
+/// De-para editável: 'Chave' = nome da aba/pasta/arquivo como vem da fonte; 'Projeto' = nome exibido no BI. Sem correspondência, vale o próprio nome da fonte. (não carrega)
+expression DeParaProjeto =
+		let
+		  Fonte = #table(type table [Chave = text, Projeto = text], {{"VILA SERENA", "Vila Serena"}, {"CD ROTA 116", "CD Rota 116"}})
+		in
+		  Fonte
+	lineageTag: 72f0b4e9-9ff9-41eb-8224-358cad829912
+

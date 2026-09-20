@@ -1,0 +1,271 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "9f06c31d0e70390e5c05",
+  "displayName": "Visão Semanal",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#0D1420'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "v30_detalhe",
+      "target": "k1_barra",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k1_delta",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k1_fundo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k2_barra",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k2_delta",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k2_fundo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k3_barra",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k3_delta",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k3_fundo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k4_barra",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k4_delta",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k4_fundo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k5_barra",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k5_delta",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k5_fundo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k6_barra",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k6_delta",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "k6_fundo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "p0_fundo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "p1_titulo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "p2_fechar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "r0b_linha",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "r0_trilho",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "r1_btn_filtros",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "r2_rotulo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v00b_linha",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v00_titulo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v01_mes",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v02_encarregado",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v03_fiscal",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v04_ct",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v05_estrutura",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v06_tipo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v07_origem",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v08b_status",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v08_semana",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v09_projeto",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v10_atividades",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v11_oms",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v12_horas",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v13_efetivo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v14_media",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v15_pendentes",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v16_mensagem",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v18_titulo_semana",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v19_periodo",
+      "type": "NoFilter"
+    },
+    {
+      "source": "v30_detalhe",
+      "target": "v20_matriz_calendario",
+      "type": "NoFilter"
+    }
+  ]
+}

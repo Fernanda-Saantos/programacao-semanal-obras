@@ -1,0 +1,20 @@
+/// Linhas da dica de ferramenta da matriz (Atividades / OS / HH). Tabela de apoio, não relacionada.
+table Sel_Indicador
+	lineageTag: 6ed51982-4471-4ac2-97d5-e42a393fcf91
+
+	column Indicador
+		lineageTag: d1e99aa8-237e-4a57-9ae7-8c188ffc1b4e
+		isNameInferred
+		sourceColumn: [Indicador]
+		sortByColumn: 'Indicador Ordem'
+
+	column 'Indicador Ordem'
+		isHidden
+		lineageTag: 23775183-38c0-4c40-b538-c0b2a52056de
+		isNameInferred
+		sourceColumn: [Indicador Ordem]
+
+	partition Sel_Indicador = calculated
+		mode: import
+		source = DATATABLE("Indicador", STRING, "Indicador Ordem", INTEGER, {{"Atividades", 1}, {"Ordens (OS)", 2}, {"Horas (HH)", 3}})
+

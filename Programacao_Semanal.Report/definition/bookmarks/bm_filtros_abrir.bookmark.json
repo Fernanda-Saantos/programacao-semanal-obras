@@ -1,0 +1,100 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/bookmark/2.1.0/schema.json",
+  "displayName": "Filtros - abrir",
+  "name": "bm_filtros_abrir",
+  "options": {
+    "applyOnlyToTargetVisuals": true,
+    "targetVisualNames": [
+      "p0_fundo",
+      "p1_titulo",
+      "p2_fechar",
+      "v08_semana",
+      "v08b_status",
+      "v01_mes",
+      "v09_projeto",
+      "v02_encarregado",
+      "v03_fiscal",
+      "v04_ct",
+      "v05_estrutura",
+      "v06_tipo",
+      "v07_origem"
+    ],
+    "suppressActiveSection": true,
+    "suppressData": true
+  },
+  "explorationState": {
+    "version": "1.0",
+    "activeSection": "9f06c31d0e70390e5c05",
+    "sections": {
+      "9f06c31d0e70390e5c05": {
+        "visualContainers": {
+          "p0_fundo": {
+            "singleVisual": {
+              "visualType": "textbox"
+            }
+          },
+          "p1_titulo": {
+            "singleVisual": {
+              "visualType": "textbox"
+            }
+          },
+          "p2_fechar": {
+            "singleVisual": {
+              "visualType": "actionButton"
+            }
+          },
+          "v08_semana": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v08b_status": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v01_mes": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v09_projeto": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v02_encarregado": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v03_fiscal": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v04_ct": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v05_estrutura": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v06_tipo": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          },
+          "v07_origem": {
+            "singleVisual": {
+              "visualType": "slicer"
+            }
+          }
+        }
+      }
+    }
+  }
+}

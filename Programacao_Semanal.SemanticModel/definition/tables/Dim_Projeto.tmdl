@@ -1,0 +1,19 @@
+table Dim_Projeto
+	lineageTag: 78f57515-e9ec-4261-a9b6-d7be28d5f32c
+
+	column Projeto
+		dataType: string
+		lineageTag: 65b36aa5-e7d6-47e3-bc3f-b7b86a5bab0b
+		summarizeBy: none
+		sourceColumn: Projeto
+
+	partition Dim_Projeto = m
+		mode: import
+		source =
+				let
+				  Fonte = Table.SelectColumns(Base_Programacao, {"Projeto"}),
+				  Dist = Table.Distinct(Fonte),
+				  Ord = Table.Sort(Dist, {{"Projeto", Order.Ascending}})
+				in
+				  Ord
+

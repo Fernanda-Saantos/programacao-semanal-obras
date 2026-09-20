@@ -1,0 +1,19 @@
+table Dim_Estrutura
+	lineageTag: 7c1a59f3-d201-499f-9c90-b0b0963d685f
+
+	column Estrutura
+		dataType: string
+		lineageTag: 4175b548-b226-49cf-9d9a-c60e22884ef2
+		summarizeBy: none
+		sourceColumn: Estrutura
+
+	partition Dim_Estrutura = m
+		mode: import
+		source =
+				let
+				  Fonte = Table.SelectColumns(Base_Programacao, {"Estrutura"}),
+				  Dist = Table.Distinct(Fonte),
+				  Ord = Table.Sort(Dist, {{"Estrutura", Order.Ascending}})
+				in
+				  Ord
+

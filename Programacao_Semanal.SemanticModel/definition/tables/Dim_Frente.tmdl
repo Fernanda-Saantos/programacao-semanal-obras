@@ -1,0 +1,19 @@
+table Dim_Frente
+	lineageTag: 9e78dcae-4dd9-4b94-b4f8-3f14cfd1e6e3
+
+	column 'Frente de Trabalho'
+		dataType: string
+		lineageTag: a87f3623-78d1-45c5-9adc-15329fbc6f60
+		summarizeBy: none
+		sourceColumn: Frente de Trabalho
+
+	partition Dim_Frente = m
+		mode: import
+		source =
+				let
+				  Fonte = Table.SelectColumns(Base_Programacao, {"Frente de Trabalho"}),
+				  Dist = Table.Distinct(Fonte),
+				  Ord = Table.Sort(Dist, {{"Frente de Trabalho", Order.Ascending}})
+				in
+				  Ord
+

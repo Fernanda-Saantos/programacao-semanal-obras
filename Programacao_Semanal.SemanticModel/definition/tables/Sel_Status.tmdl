@@ -1,0 +1,20 @@
+/// Filtro Status dos cartões (Realizado / Programado). Tabela de apoio, não relacionada.
+table Sel_Status
+	lineageTag: 58ce2d07-cb0f-4484-96e4-85c50354b1a9
+
+	column Status
+		lineageTag: 81eca9eb-907c-4675-8f93-01a8a027fdec
+		isNameInferred
+		sourceColumn: [Status]
+		sortByColumn: 'Status Ordem'
+
+	column 'Status Ordem'
+		isHidden
+		lineageTag: 736530d1-13ca-4f7b-b954-ab366bd49446
+		isNameInferred
+		sourceColumn: [Status Ordem]
+
+	partition Sel_Status = calculated
+		mode: import
+		source = DATATABLE("Status", STRING, "Status Ordem", INTEGER, {{"Realizado", 1}, {"Programado", 2}})
+

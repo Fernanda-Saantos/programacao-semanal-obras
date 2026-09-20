@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Programacao_Semanal"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "4c8e0c15-20e3-41e0-ad65-30626bbfc90e"
+  }
+}

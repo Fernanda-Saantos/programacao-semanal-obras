@@ -1,0 +1,34 @@
+model Model
+	culture: pt-BR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: pt-BR
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+annotation PBI_QueryOrder = ["Fato_Programacao","Dim_Encarregado","Dim_Fiscal","Dim_Estrutura","Dim_Frente","Dim_Tipo_Ordem","Dim_Origem","Base_Programacao","Dim_Projeto","PastaProgramacao","SiteSharePoint","ProjetoPor","DeParaProjeto"]
+
+ref table Fato_Programacao
+ref table Dim_Encarregado
+ref table Dim_Fiscal
+ref table Dim_Estrutura
+ref table Dim_Frente
+ref table Dim_Tipo_Ordem
+ref table Dim_Origem
+ref table Dim_Calendario
+ref table Sel_Mes
+ref table _Medidas
+ref table Sel_Metrica
+ref table DateTableTemplate_5819bc4e-40c9-4c0d-97f7-224279368046
+ref table LocalDateTable_a8cb96cd-960d-47a3-b856-b7d52afa1c52
+ref table Dim_Projeto
+ref table Sel_Status
+ref table Sel_Indicador
+
+ref cultureInfo pt-BR
+
