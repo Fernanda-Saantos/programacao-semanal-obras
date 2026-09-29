@@ -2,7 +2,7 @@
 
 > Empresa, obras, pessoas e dados **100% fictícios**, criados para portfólio.
 
-## A dor
+## Qual é a dor
 
 Em quase todo setor (obra, manutenção, facilities, produção) a programação da semana mora numa planilha que só quem a montou consegue ler. Fiscais, encarregados e gestores não enxergam o que está previsto para cada dia, quem faz o quê, nem o quanto do planejado foi de fato executado. O resultado: reunião de segunda sem visão comum, mão de obra ociosa sem ninguém perceber e apontamento atrasado.
 
